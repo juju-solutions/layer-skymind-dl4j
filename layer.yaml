@@ -1,0 +1,9 @@
+includes: [ 'layer:basic', 'layer:cuda' ]
+options:
+  basic:
+    packages:
+      - git
+      - libopenblas-base
+      - libopenblas-dev
+      - build-essential
+      - software-properties-common

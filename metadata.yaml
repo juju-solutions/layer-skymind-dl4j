@@ -1,0 +1,16 @@
+name: deeplearning4j
+summary: installs deeplearning4j stack for Spark
+maintainer: Samuel Cozannet <samnco@gmail.com>
+description: |
+  Installs deeplearning4j complete edition
+tags:
+  - bigdata
+  - hadoop
+subordinate: true
+provides:
+  dl4j:
+    interface: deeplearning
+requires:
+  enabled-cuda-driver:
+    interface: cuda
+    scope: container
