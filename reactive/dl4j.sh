@@ -23,17 +23,28 @@ function install_dl4j() {
 
     apt-get update -yqq && \
     apt-get install -yqq \
-        cmake \
         maven3 \
         openjdk-8-jre-headless \
         openjdk-8-jdk
 
     case "$(arch)" in 
         "x86_64" | "amd64" )
-            apt-get install -yqq libopenblas-base libopenblas-dev
+            apt-get install -yqq \
+                cmake \
+                libopenblas-base \
+                libopenblas-dev
         ;;
         "ppc64le" )
-            git clone https://github.com/xianyi/OpenBLAS.git /mnt/openblas
+            cd /mnt
+            wget -c https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz 
+            tar xfz cmake-3.5.2.tar.gz
+            cd cmake-3.5.2
+            ./bootstrap
+            make && make install 
+
+        [ -d "/mnt/openblas" ] \
+            || git clone https://github.com/xianyi/OpenBLAS.git /mnt/openblas \
+            && { cd "/mnt/openblas" ; git pull origin master ; cd - ; }
             cd /mnt/openblas
             make && make PREFIX=/usr install
         ;;
