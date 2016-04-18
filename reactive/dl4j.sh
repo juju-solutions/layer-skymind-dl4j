@@ -83,12 +83,31 @@ function install_dl4j() {
         ./buildnativeoperations.sh blas ${TARGET}
     done 
 
-    juju-log "Installing DL4j"
-    for PROJECT in nd4j deeplearning4j Canova
-    do
-        cd "/mnt/${PROJECT}"
-        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
-    done
+    case "$(arch)" in 
+        "x86_64" | "amd64" )
+            juju-log "Installing DL4j"
+            for PROJECT in nd4j deeplearning4j Canova
+            do
+                cd "/mnt/${PROJECT}"
+                JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
+            done
+        ;;
+        "ppc64le" )
+            juju-log "Installing DL4j"
+            for PROJECT in nd4j deeplearning4j Canova
+            do
+                cd "/mnt/${PROJECT}"
+                JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64el" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
+            done
+        ;;
+        "*" )
+            juju-log "Your architecture is not supported yet. Exiting"
+            exit 1
+        ;;
+    esac
+
+    cp -r "${HOME}/.m2" /mnt/
+    chmod -R a+r /mnt/.m2
 
     charms.reactive set_state 'dl4j.installed'
 }
