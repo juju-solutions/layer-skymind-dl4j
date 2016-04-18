@@ -28,6 +28,22 @@ function install_dl4j() {
         openjdk-8-jre-headless \
         openjdk-8-jdk
 
+    case "$(arch)" in 
+        "x86_64" | "amd64" )
+            apt-get install -yqq libopenblas-base libopenblas-dev
+        ;;
+        "ppc64le" )
+            git clone https://github.com/xianyi/OpenBLAS.git /mnt/openblas
+            cd /mnt/openblas
+            make && make PREFIX=/usr install
+        ;;
+        "*" )
+            juju-log "Your architecture is not supported yet. Exiting"
+            exit 1
+        ;;
+    esac
+
+
     juju-log "Creating program variables"
     export LIBND4J_HOME="/mnt/libnd4j"
     echo 'export LIBND4J_HOME="/mnt/libnd4j"' | tee /etc/profile.d/libnd4j.sh
