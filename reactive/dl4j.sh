@@ -47,7 +47,7 @@ function all::all::install_prerequisites() {
         || git clone -q https://github.com/bytedeco/javacpp.git /mnt/javacpp \
         && { cd "/mnt/javacpp" ; git pull ; }
     cd /mnt/javacpp
-    mvn clean install -DskipTests
+    MAVEN_OPTS=-Xmx2048m mvn clean install -DskipTests
 }
 
 function trusty::x86_64::install_prerequisites() {
@@ -137,7 +137,7 @@ function trusty::ppc64le::install_dl4j() {
     for PROJECT in nd4j deeplearning4j Canova
     do
         cd "/mnt/${PROJECT}"
-        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64lel" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
+        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64el" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
     done
 }
 
@@ -145,7 +145,7 @@ function xenial::ppc64le::install_dl4j() {
     for PROJECT in nd4j deeplearning4j Canova
     do
         cd "/mnt/${PROJECT}"
-        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64lel" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
+        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64el" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
     done
 }
 
