@@ -207,7 +207,7 @@ function install_dl4j() {
     ${UBUNTU_CODENAME}::${ARCH}::install_dl4j
 
     juju-log "Moving Maven Repo to /mnt/.m2 and making readable"
-    rsync -autvr --delete ${HOME}/.m2 /mnt/
+    rsync -autvr --delete /root/.m2 /mnt/
     chmod -R a+r /mnt/.m2
 
     charms.reactive set_state 'dl4j.installed'
