@@ -145,7 +145,6 @@ function xenial::ppc64le::install_libnd4j() {
     trusty::ppc64le::install_libnd4j
 }
 
-
 #####################################################################
 #
 # Install ND4j, DL4j, and Canova per architecture
@@ -165,7 +164,15 @@ function trusty::ppc64le::install_dl4j() {
 }
 
 function trusty::x86_64::install_dl4j() {
-    trusty::ppc64le::install_dl4j
+    for PROJECT in nd4j deeplearning4j Canova
+    do
+        if [ ! -f "/mnt/.built_${PROJECT}" ]
+        then
+            cd "/mnt/${PROJECT}"
+            JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" mvn clean install -DskipTests -Dmaven.javadoc.skip=true \
+                && touch "/mnt/.built_${PROJECT}"
+        fi 
+    done
 }
 
 function xenial::x86_64::install_dl4j() {
