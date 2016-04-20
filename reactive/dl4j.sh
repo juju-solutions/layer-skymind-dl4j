@@ -101,7 +101,7 @@ function xenial::ppc64le::install_prerequisites() {
 # 
 #####################################################################
 
-function all::all::install_libnd4j() {
+function trusty::x86_64::install_libnd4j() {
     export LIBND4J_HOME="/mnt/libnd4j"
     echo 'export LIBND4J_HOME="/mnt/libnd4j"' | sudo tee /etc/profile.d/libnd4j.sh
 
@@ -118,6 +118,33 @@ function all::all::install_libnd4j() {
                 && touch "~/.built_libnd4j_${TARGET}" ; }
     done 
 }
+
+function xenial::x86_64::install_libnd4j() {
+    trusty::x86_64::install_libnd4j
+}
+
+function trusty::ppc64le::install_libnd4j() {
+   export LIBND4J_HOME="/mnt/libnd4j"
+    echo 'export LIBND4J_HOME="/mnt/libnd4j"' | sudo tee /etc/profile.d/libnd4j.sh
+
+    cd ${LIBND4J_HOME}
+    # Intentionally removing CUDA for now
+    hash nvcc 2>/dev/null \
+        && TARGET_LIST="cpu" \
+        || TARGET_LIST="cpu" \
+
+    for TARGET in ${TARGET_LIST}
+    do
+        [ -f "~/.built_libnd4j_${TARGET}" ] || \
+            { ./buildnativeoperations.sh blas ${TARGET} \
+                && touch "~/.built_libnd4j_${TARGET}" ; }
+    done 
+}
+
+function xenial::ppc64le::install_libnd4j() {
+    trusty::ppc64le::install_libnd4j
+}
+
 
 #####################################################################
 #
@@ -176,7 +203,7 @@ function install_dl4j() {
     ${UBUNTU_CODENAME}::${ARCH}::install_prerequisites
     
     juju-log "Installing DL4j & Other libs"
-    all::all::install_libnd4j
+    ${UBUNTU_CODENAME}::${ARCH}::install_libnd4j
     ${UBUNTU_CODENAME}::${ARCH}::install_dl4j
 
     juju-log "Moving Maven Repo to /mnt/.m2 and making readable"
