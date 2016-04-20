@@ -113,9 +113,9 @@ function trusty::x86_64::install_libnd4j() {
 
     for TARGET in ${TARGET_LIST}
     do
-        [ -f "~/.built_libnd4j_${TARGET}" ] || \
+        [ -f "/mnt/.built_libnd4j_${TARGET}" ] || \
             { ./buildnativeoperations.sh blas ${TARGET} \
-                && touch "~/.built_libnd4j_${TARGET}" ; }
+                && touch "/mnt/.built_libnd4j_${TARGET}" ; }
     done 
 }
 
@@ -135,9 +135,9 @@ function trusty::ppc64le::install_libnd4j() {
 
     for TARGET in ${TARGET_LIST}
     do
-        [ -f "~/.built_libnd4j_${TARGET}" ] || \
+        [ -f "/mnt/.built_libnd4j_${TARGET}" ] || \
             { ./buildnativeoperations.sh blas ${TARGET} \
-                && touch "~/.built_libnd4j_${TARGET}" ; }
+                && touch "/mnt/.built_libnd4j_${TARGET}" ; }
     done 
 }
 
@@ -155,11 +155,11 @@ function xenial::ppc64le::install_libnd4j() {
 function trusty::ppc64le::install_dl4j() {
     for PROJECT in nd4j deeplearning4j Canova
     do
-        if [ ! -f "~/.built_${PROJECT}" ]
+        if [ ! -f "/mnt/.built_${PROJECT}" ]
         then
             cd "/mnt/${PROJECT}"
             JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64el" mvn clean install -DskipTests -Dmaven.javadoc.skip=true \
-                && touch "~/.built_${PROJECT}"
+                && touch "/mnt/.built_${PROJECT}"
         fi 
     done
 }
