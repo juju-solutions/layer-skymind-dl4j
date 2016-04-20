@@ -33,7 +33,8 @@ function all::all::install_prerequisites() {
     apt-get install -yqq \
         maven3 \
         openjdk-8-jre-headless \
-        openjdk-8-jdk
+        openjdk-8-jdk \
+        rsync
 
     juju-log "Downloading required projects"
     for PROJECT in libnd4j nd4j deeplearning4j Canova
@@ -105,9 +106,16 @@ function all::all::install_libnd4j() {
     echo 'export LIBND4J_HOME="/mnt/libnd4j"' | sudo tee /etc/profile.d/libnd4j.sh
 
     cd ${LIBND4J_HOME}
-    for TARGET in cpu cuda
+
+    hash nvcc 2>/dev/null \
+        && TARGET_LIST="cpu cuda" \
+        || TARGET_LIST="cpu" \
+
+    for TARGET in ${TARGET_LIST}
     do
-        ./buildnativeoperations.sh blas ${TARGET}
+        [ -f "~/.built_libnd4j_${TARGET}" ] || \
+            { ./buildnativeoperations.sh blas ${TARGET} \
+                && touch "~/.built_libnd4j_${TARGET}" ; }
     done 
 }
 
@@ -117,36 +125,28 @@ function all::all::install_libnd4j() {
 # 
 #####################################################################
 
-function trusty::x86_64::install_dl4j() {
-    for PROJECT in nd4j deeplearning4j Canova
-    do
-        cd "/mnt/${PROJECT}"
-        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
-    done
-}
-
-function xenial::x86_64::install_dl4j() {
-    for PROJECT in nd4j deeplearning4j Canova
-    do
-        cd "/mnt/${PROJECT}"
-        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
-    done
-}
-
 function trusty::ppc64le::install_dl4j() {
     for PROJECT in nd4j deeplearning4j Canova
     do
-        cd "/mnt/${PROJECT}"
-        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64el" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
+        if [ ! -f "~/.built_${PROJECT}" ]
+        then
+            cd "/mnt/${PROJECT}"
+            JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64el" mvn clean install -DskipTests -Dmaven.javadoc.skip=true \
+                && touch "~/.built_${PROJECT}"
+        fi 
     done
 }
 
+function trusty::x86_64::install_dl4j() {
+    trusty::ppc64le::install_dl4j
+}
+
+function xenial::x86_64::install_dl4j() {
+    trusty::ppc64le::install_dl4j
+}
+
 function xenial::ppc64le::install_dl4j() {
-    for PROJECT in nd4j deeplearning4j Canova
-    do
-        cd "/mnt/${PROJECT}"
-        JAVA_HOME="/usr/lib/jvm/java-8-openjdk-ppc64el" mvn clean install -DskipTests -Dmaven.javadoc.skip=true
-    done
+    trusty::ppc64le::install_dl4j
 }
 
 UBUNTU_CODENAME="$(bash::lib::get_ubuntu_codename)"
@@ -180,7 +180,7 @@ function install_dl4j() {
     ${UBUNTU_CODENAME}::${ARCH}::install_dl4j
 
     juju-log "Moving Maven Repo to /mnt/.m2 and making readable"
-    cp -r "${HOME}/.m2" /mnt/
+    rsync -autvr --delete ${HOME}/.m2 /mnt/
     chmod -R a+r /mnt/.m2
 
     charms.reactive set_state 'dl4j.installed'
