@@ -21,6 +21,28 @@ function bash::lib::get_ubuntu_codename() {
 #####################################################################
 
 function all::all::install_prerequisites() {
+    juju-log "Downloading required projects"
+    for PROJECT in libnd4j nd4j deeplearning4j Canova
+    do
+        [ -d "/mnt/${PROJECT}" ] \
+            || git clone -q https://github.com/deeplearning4j/${PROJECT}.git "/mnt/${PROJECT}" \
+            && { cd "/mnt/${PROJECT}" ; git pull ; }
+    done 
+    
+    [ -d "/mnt/javacpp" ] \
+        || git clone -q https://github.com/bytedeco/javacpp.git /mnt/javacpp \
+        && { cd "/mnt/javacpp" ; git pull ; }
+    cd /mnt/javacpp
+    MAVEN_OPTS=-Xmx2048m mvn clean install -DskipTests
+
+}
+
+function trusty::x86_64::install_prerequisites() {
+    apt-get install -yqq \
+        cmake \
+        libopenblas-base \
+        libopenblas-dev
+
     # We need maven 3.2.3+ which is not in repos. Installing if necessary
     hash mvn 2>/dev/null || apt-get remove --purge maven 
 
@@ -35,37 +57,35 @@ function all::all::install_prerequisites() {
         openjdk-8-jre-headless \
         openjdk-8-jdk \
         rsync
-
-    juju-log "Downloading required projects"
-    for PROJECT in libnd4j nd4j deeplearning4j Canova
-    do
-        [ -d "/mnt/${PROJECT}" ] \
-            || git clone -q https://github.com/deeplearning4j/${PROJECT}.git "/mnt/${PROJECT}" \
-            && { cd "/mnt/${PROJECT}" ; git pull ; }
-    done 
-    
-    [ -d "/mnt/javacpp" ] \
-        || git clone -q https://github.com/bytedeco/javacpp.git /mnt/javacpp \
-        && { cd "/mnt/javacpp" ; git pull ; }
-    cd /mnt/javacpp
-    MAVEN_OPTS=-Xmx2048m mvn clean install -DskipTests
-}
-
-function trusty::x86_64::install_prerequisites() {
-    apt-get install -yqq \
-        cmake \
-        libopenblas-base \
-        libopenblas-dev
 }
 
 function xenial::x86_64::install_prerequisites() {
     apt-get install -yqq \
         cmake \
         libopenblas-base \
-        libopenblas-dev
+        libopenblas-dev \
+        maven \
+        openjdk-8-jre-headless \
+        openjdk-8-jdk \
+        rsync        
 }
 
 function trusty::ppc64le::install_prerequisites() {
+    # We need maven 3.2.3+ which is not in repos. Installing if necessary
+    hash mvn 2>/dev/null || apt-get remove --purge maven 
+
+    add-apt-repository -y ppa:george-edison55/cmake-3.x
+    apt-add-repository -y ppa:andrei-pozolotin/maven3
+    apt-add-repository -y ppa:openjdk-r/ppa
+    apt-add-repository -y ppa:jochenkemnade/openjdk-8
+
+    apt-get update -yqq && \
+    apt-get install -yqq \
+        maven3 \
+        openjdk-8-jre-headless \
+        openjdk-8-jdk \
+        rsync   
+
     cd /mnt
     wget -c https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz 
     tar xfz cmake-3.5.2.tar.gz
@@ -81,6 +101,12 @@ function trusty::ppc64le::install_prerequisites() {
 }
 
 function xenial::ppc64le::install_prerequisites() {
+    apt-get install -yqq \
+        maven \
+        openjdk-8-jre-headless \
+        openjdk-8-jdk \
+        rsync  
+
     cd /mnt
     wget -c https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz 
     tar xfz cmake-3.5.2.tar.gz
@@ -176,7 +202,7 @@ function trusty::x86_64::install_dl4j() {
 }
 
 function xenial::x86_64::install_dl4j() {
-    trusty::ppc64le::install_dl4j
+    trusty::x86_64::install_dl4j
 }
 
 function xenial::ppc64le::install_dl4j() {
@@ -207,6 +233,7 @@ function install_dl4j() {
             exit 1
         ;;
     esac
+    
     ${UBUNTU_CODENAME}::${ARCH}::install_prerequisites
     
     juju-log "Installing DL4j & Other libs"
