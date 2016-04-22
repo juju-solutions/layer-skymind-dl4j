@@ -102,6 +102,8 @@ function trusty::ppc64le::install_prerequisites() {
 
 function xenial::ppc64le::install_prerequisites() {
     apt-get install -yqq \
+        libopenblas-base \
+        libopenblas-dev \
         maven \
         openjdk-8-jre-headless \
         openjdk-8-jdk \
@@ -113,12 +115,6 @@ function xenial::ppc64le::install_prerequisites() {
     cd cmake-3.5.2
     ./bootstrap
     make && make install 
-
-    [ -d "/mnt/openblas" ] \
-    || git clone https://github.com/xianyi/OpenBLAS.git /mnt/openblas \
-    && { cd "/mnt/openblas" ; git pull ; cd - ; }
-    cd /mnt/openblas
-    make && make PREFIX=/usr install
 }
 
 #####################################################################
@@ -233,7 +229,7 @@ function install_dl4j() {
             exit 1
         ;;
     esac
-    
+
     ${UBUNTU_CODENAME}::${ARCH}::install_prerequisites
     
     juju-log "Installing DL4j & Other libs"
