@@ -11,6 +11,6 @@ provides:
   dl4j:
     interface: deeplearning
 requires:
-  enabled-cuda-driver:
-    interface: cuda
+  any-service:
+    interface: juju-info
     scope: container
