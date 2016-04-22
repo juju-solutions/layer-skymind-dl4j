@@ -210,7 +210,6 @@ UBUNTU_CODENAME="$(bash::lib::get_ubuntu_codename)"
 
 # 'apt.installed.cmake' 'apt.installed.maven3'
 @when_not 'dl4j.installed' 
-@when 'cuda.available' 
 function install_dl4j() {
     status-set maintenance "Installing dl4j software"
 

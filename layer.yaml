@@ -1,4 +1,4 @@
-includes: [ 'layer:basic', 'layer:cuda' ]
+includes: [ 'layer:basic' ]
 repo: https://github.com/SaMnCo/layer-skymind-dl4j.git
 options:
   basic:
